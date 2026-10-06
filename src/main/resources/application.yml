@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: cosmo-cats
+  web:
+    locale: en                # keep validation messages in English regardless of OS locale
+    locale-resolver: fixed
+  mvc:
+    problemdetails:
+      enabled: false   # RFC 9457 handling is done by GlobalExceptionHandler
+
+server:
+  port: 8080
