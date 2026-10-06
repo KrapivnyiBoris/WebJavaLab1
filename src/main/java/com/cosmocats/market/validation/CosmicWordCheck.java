@@ -16,7 +16,7 @@ import jakarta.validation.Payload;
  */
 @Documented
 @Constraint(validatedBy = CosmicWordCheckValidator.class)
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.RECORD_COMPONENT})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CosmicWordCheck {
 

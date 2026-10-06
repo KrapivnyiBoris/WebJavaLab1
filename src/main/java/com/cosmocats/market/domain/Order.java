@@ -2,27 +2,30 @@ package com.cosmocats.market.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Customer order created from a {@link Cart}. */
-@Getter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Order {
-    private final UUID id;
-    private final UUID customerId;
-    private final List<OrderItem> items;
-    private final Instant createdAt;
-    private OrderStatus status;
-
-    public Order(UUID customerId, List<OrderItem> items) {
-        this.id = UUID.randomUUID();
-        this.customerId = customerId;
-        this.items = List.copyOf(items);
-        this.createdAt = Instant.now();
-        this.status = OrderStatus.NEW;
-    }
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
+    private UUID customerId;
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
+    @Builder.Default
+    private Instant createdAt = Instant.now();
+    @Builder.Default
+    private OrderStatus status = OrderStatus.NEW;
 
     public BigDecimal total() {
         return items.stream()

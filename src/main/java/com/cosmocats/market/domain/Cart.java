@@ -5,19 +5,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Shopping cart of a cat (customer). */
-@Getter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Cart {
-    private final UUID id;
-    private final UUID customerId;
-    private final List<CartItem> items = new ArrayList<>();
-
-    public Cart(UUID customerId) {
-        this.id = UUID.randomUUID();
-        this.customerId = customerId;
-    }
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
+    private UUID customerId;
+    @Builder.Default
+    private List<CartItem> items = new ArrayList<>();
 
     public void addProduct(Product product, int quantity) {
         if (quantity <= 0) {
@@ -51,13 +54,17 @@ public class Cart {
             throw new IllegalStateException("Cannot checkout an empty cart");
         }
         List<OrderItem> orderItems = items.stream()
-                .map(item -> new OrderItem(
-                        item.getProduct().getId(),
-                        item.getProduct().getName(),
-                        item.getProduct().getPrice(),
-                        item.getQuantity()))
+                .map(item -> OrderItem.builder()
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .unitPrice(item.getProduct().getPrice())
+                        .quantity(item.getQuantity())
+                        .build())
                 .toList();
-        Order order = new Order(customerId, orderItems);
+        Order order = Order.builder()
+                .customerId(customerId)
+                .items(new ArrayList<>(orderItems))
+                .build();
         clear();
         return order;
     }

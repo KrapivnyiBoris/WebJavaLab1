@@ -1,57 +1,59 @@
 openapi: 3.0.3
 info:
   title: Cosmo Cats Market - Product API
-  description: Контракт API для Інтергалактичного Ринку Космічних Котів (CRUD над сутністю Product).
+  description: API contract for the Cosmo Cats intergalactic marketplace (CRUD operations over the Product entity).
   version: 1.0.0
 servers:
   - url: http://localhost:8080
     description: Local development
 tags:
   - name: Products
-    description: Керування товарами ринку
+    description: Product management of the marketplace
 
 paths:
   /api/v1/products:
     get:
       tags: [Products]
-      operationId: getProducts
-      summary: Отримати сторінку товарів
-      description: Повертає paged envelope з товарами поточної сторінки.
+      operationId: getAllProducts
+      summary: Get a page of products
+      description: Returns a paged envelope with the products of the requested page.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
         '200':
-          description: Сторінка товарів
+          description: Page of products
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedProductResponseDto'
+                $ref: '#/components/schemas/PagedProductResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       tags: [Products]
       operationId: createProduct
-      summary: Створити товар
+      summary: Create a product
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductDto'
+              $ref: '#/components/schemas/ProductRequest'
       responses:
         '201':
-          description: Товар створено
+          description: Product created
           headers:
             Location:
-              description: URL створеного товару
+              description: URL of the created product
               schema:
                 type: string
                 format: uri
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductDto'
+                $ref: '#/components/schemas/ProductResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
 
@@ -61,14 +63,14 @@ paths:
     get:
       tags: [Products]
       operationId: getProductById
-      summary: Отримати товар за ідентифікатором
+      summary: Get a product by its identifier
       responses:
         '200':
-          description: Товар знайдено
+          description: Product found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductDto'
+                $ref: '#/components/schemas/ProductResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '404':
@@ -76,31 +78,31 @@ paths:
     put:
       tags: [Products]
       operationId: updateProduct
-      summary: Повністю оновити товар
+      summary: Fully update a product
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductDto'
+              $ref: '#/components/schemas/ProductRequest'
       responses:
         '200':
-          description: Товар оновлено
+          description: Product updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductDto'
+                $ref: '#/components/schemas/ProductResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
       tags: [Products]
-      operationId: deleteProduct
-      summary: Видалити товар
+      operationId: deleteProductById
+      summary: Delete a product
       responses:
         '204':
-          description: Товар видалено
+          description: Product deleted
         '400':
           $ref: '#/components/responses/ValidationError'
         '404':
@@ -111,7 +113,7 @@ components:
     Page:
       name: page
       in: query
-      description: Номер сторінки (починається з 0)
+      description: Page number (zero-based)
       required: false
       schema:
         type: integer
@@ -121,7 +123,7 @@ components:
     Size:
       name: size
       in: query
-      description: Розмір сторінки
+      description: Page size
       required: false
       schema:
         type: integer
@@ -132,7 +134,7 @@ components:
     ProductId:
       name: id
       in: path
-      description: Ідентифікатор товару
+      description: Product identifier
       required: true
       schema:
         type: string
@@ -140,7 +142,7 @@ components:
 
   responses:
     ValidationError:
-      description: Помилка валідації (RFC 9457)
+      description: Validation error (RFC 9457)
       content:
         application/problem+json:
           schema:
@@ -152,7 +154,7 @@ components:
             detail: "Field 'price' must be greater than 0."
             instance: /api/v1/products
     NotFound:
-      description: Ресурс не знайдено (RFC 9457)
+      description: Resource not found (RFC 9457)
       content:
         application/problem+json:
           schema:
@@ -161,23 +163,20 @@ components:
             type: https://cosmo-cats.market/errors/not-found
             title: Resource not found
             status: 404
-            detail: "Product with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' was not found."
+            detail: "Product with id 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"
             instance: /api/v1/products/3fa85f64-5717-4562-b3fc-2c963f66afa6
 
   schemas:
-    ProductDto:
+    ProductRequest:
       type: object
+      description: Request body for creating or updating a product (the id cannot be provided by the client)
       required: [name, price, category, stockQuantity]
       properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
         name:
           type: string
           minLength: 1
           maxLength: 100
-          description: Назва товару; має містити космічний термін (star, galaxy, comet, cosmic, space, nebula, meteor, planet, orbit, universe) без урахування регістру
+          description: Product name; must contain a cosmic term (star, galaxy, comet, cosmic, space, nebula, meteor, planet, orbit, universe), case-insensitive
           example: Anti-gravity Star Yarn
         description:
           type: string
@@ -188,6 +187,8 @@ components:
           format: decimal
           exclusiveMinimum: true
           minimum: 0
+          maximum: 9999999999.99
+          multipleOf: 0.01
           example: 19.99
         category:
           type: string
@@ -200,35 +201,64 @@ components:
           minimum: 0
           example: 100
 
-    PagedProductResponseDto:
+    ProductResponse:
       type: object
-      description: Пагінована відповідь (paged envelope)
-      required: [content, page, size, totalElements]
+      description: Product representation returned to clients
+      required: [id, name, price, category, stockQuantity]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          example: Anti-gravity Star Yarn
+        description:
+          type: string
+          example: Yarn ball that floats around the cabin
+        price:
+          type: number
+          format: decimal
+          maximum: 9999999999.99
+          multipleOf: 0.01
+          example: 19.99
+        category:
+          type: string
+          example: Toys
+        stockQuantity:
+          type: integer
+          format: int32
+          example: 100
+
+    PagedProductResponse:
+      type: object
+      description: Paged envelope with products
+      required: [content, page, size, totalElements, totalPages]
       properties:
         content:
           type: array
-          description: Товари поточної сторінки
+          description: Products of the current page
           items:
-            $ref: '#/components/schemas/ProductDto'
+            $ref: '#/components/schemas/ProductResponse'
         page:
           type: integer
           format: int32
-          description: Номер поточної сторінки (з 0)
+          description: Current page number (zero-based)
           example: 0
         size:
           type: integer
           format: int32
-          description: Розмір сторінки
+          description: Page size
           example: 10
         totalElements:
           type: integer
           format: int64
-          description: Загальна кількість елементів
+          description: Total number of elements
           example: 12
         totalPages:
           type: integer
           format: int32
-          description: Загальна кількість сторінок
+          description: Total number of pages
           example: 2
 
     ProblemDetail:

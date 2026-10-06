@@ -3,13 +3,15 @@ package com.cosmocats.market.domain;
 import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** A product with a quantity inside a {@link Cart}. */
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class CartItem {
     private Product product;
     private int quantity;
