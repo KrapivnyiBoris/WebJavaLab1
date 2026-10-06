@@ -1,0 +1,9 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+.vscode/
+
+REVIEW_RULES.md
+gradle/wrapper/gradle-wrapper.jar
