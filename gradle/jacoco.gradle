@@ -1,0 +1,48 @@
+apply plugin: 'jacoco'
+
+// Classes excluded from coverage: application entry point, DTOs, domain models, page wrapper,
+// configuration classes, custom exceptions, MapStruct-generated mappers
+ext.jacocoExcludes = [
+        '**/CosmoCatsApplication.class',
+        '**/dto/**',
+        '**/model/**',
+        '**/domain/**',
+        '**/service/PageResult.class',
+        '**/config/**',
+        '**/*Configuration*',
+        '**/exception/**',
+        '**/*MapperImpl*'
+]
+
+def coveredClasses = files(sourceSets.main.output.classesDirs.files.collect {
+    fileTree(dir: it, exclude: jacocoExcludes)
+})
+
+tasks.named('jacocoTestReport') {
+    dependsOn 'test'
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    classDirectories.setFrom(coveredClasses)
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn 'jacocoTestReport'
+
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.80
+            }
+        }
+    }
+
+    classDirectories.setFrom(coveredClasses)
+}
+
+tasks.named('check') {
+    dependsOn 'jacocoTestCoverageVerification'
+}

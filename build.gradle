@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -34,7 +35,14 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
 }
+
+apply from: 'gradle/test.gradle'
+apply from: 'gradle/jacoco.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-Amapstruct.defaultComponentModel=spring', '-parameters']

@@ -1,0 +1,9 @@
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+
+    finalizedBy 'jacocoTestReport'
+}
