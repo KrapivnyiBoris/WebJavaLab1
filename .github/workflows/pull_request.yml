@@ -23,11 +23,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # Run Gradle build and tests with coverage (also handles Gradle caching)
-      - name: Setup Gradle and Run Tests
+      # Set up Gradle (handles Gradle caching)
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          arguments: clean build jacocoTestReport
+
+      # Run Gradle build and tests with coverage
+      - name: Run Gradle Build and Tests
+        run: ./gradlew clean build jacocoTestReport
 
       # Upload the JaCoCo test coverage report
       - name: Upload coverage report
