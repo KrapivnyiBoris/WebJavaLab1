@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,9 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Order {
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
-    private UUID customerId;
+    private Long id;
+    private Long customerId;
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
     @Builder.Default

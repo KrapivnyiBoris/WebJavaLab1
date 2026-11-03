@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: v2-001-unique-product-name-per-category
+      author: cosmocats
+      changes:
+        - addUniqueConstraint:
+            constraintName: uq_products_category_product_name
+            tableName: products
+            columnNames: category_id, product_name
+
+  - changeSet:
+      id: v2-002-unique-order-number
+      author: cosmocats
+      changes:
+        - addUniqueConstraint:
+            constraintName: uq_orders_order_number
+            tableName: orders
+            columnNames: order_number
+
+  - changeSet:
+      id: v2-003-index-product-name
+      author: cosmocats
+      changes:
+        - createIndex:
+            indexName: idx_products_product_name
+            tableName: products
+            columns:
+              - column:
+                  name: product_name

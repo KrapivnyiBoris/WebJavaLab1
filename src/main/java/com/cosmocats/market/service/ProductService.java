@@ -1,6 +1,5 @@
 package com.cosmocats.market.service;
 
-import java.util.UUID;
 
 import com.cosmocats.market.domain.Product;
 
@@ -12,9 +11,9 @@ public interface ProductService {
     /** Returns one page (zero-based) of products in a stable order. */
     PageResult<Product> getAllProducts(int page, int size);
 
-    Product getProductById(UUID id);
+    Product getProductById(Long id);
 
-    Product updateProduct(UUID id, Product product);
+    Product updateProduct(Long id, Product product);
 
-    void deleteProductById(UUID id);
+    void deleteProductById(Long id);
 }

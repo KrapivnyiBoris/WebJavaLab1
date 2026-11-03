@@ -1,7 +1,6 @@
 package com.cosmocats.market.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Value;
@@ -12,7 +11,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 public class ProductResponseDto {
-    UUID id;
+    Long id;
     String name;
     String description;
     BigDecimal price;

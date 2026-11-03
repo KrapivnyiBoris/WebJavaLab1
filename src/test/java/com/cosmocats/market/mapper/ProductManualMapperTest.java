@@ -3,7 +3,6 @@ package com.cosmocats.market.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ import com.cosmocats.market.dto.ProductResponseDto;
 
 class ProductManualMapperTest {
 
-    private static final UUID PRODUCT_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final Long PRODUCT_ID = 1L;
 
     private final ProductManualMapper productMapper = new ProductManualMapper();
 
@@ -89,7 +88,7 @@ class ProductManualMapperTest {
                 .name("Cosmic Yarn")
                 .description("Yarn from deep space")
                 .price(new BigDecimal("9.99"))
-                .category(Category.builder().id(UUID.randomUUID()).name("Toys").build())
+                .category(Category.builder().id(2L).name("Toys").build())
                 .stockQuantity(5)
                 .build();
     }

@@ -56,6 +56,8 @@ paths:
                 $ref: '#/components/schemas/ProductResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /api/v1/products/{id}:
     parameters:
@@ -96,6 +98,8 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
     delete:
       tags: [Products]
       operationId: deleteProductById
@@ -137,8 +141,9 @@ components:
       description: Product identifier
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
+        minimum: 1
 
   responses:
     ValidationError:
@@ -163,8 +168,21 @@ components:
             type: https://cosmo-cats.market/errors/not-found
             title: Resource not found
             status: 404
-            detail: "Product with id 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"
-            instance: /api/v1/products/3fa85f64-5717-4562-b3fc-2c963f66afa6
+            detail: "Product with id 1 not found"
+            instance: /api/v1/products/1
+
+    Conflict:
+      description: Unique constraint violation, e.g. a product with the same name already exists in the category (RFC 9457)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: https://cosmo-cats.market/errors/conflict
+            title: Conflict
+            status: 409
+            detail: "Product with the same name already exists in this category."
+            instance: /api/v1/products
 
   schemas:
     ProductRequest:
@@ -207,9 +225,9 @@ components:
       required: [id, name, price, category, stockQuantity]
       properties:
         id:
-          type: string
-          format: uuid
-          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          type: integer
+          format: int64
+          example: 1
         name:
           type: string
           example: Anti-gravity Star Yarn

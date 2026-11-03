@@ -1,7 +1,6 @@
 package com.cosmocats.market.controller;
 
 import java.net.URI;
-import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -60,7 +59,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID id) {
+    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productMapper.toDto(productService.getProductById(id)));
     }
 
@@ -76,13 +75,13 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable UUID id, @Valid @RequestBody ProductRequestDto request) {
+            @PathVariable Long id, @Valid @RequestBody ProductRequestDto request) {
         Product updated = productService.updateProduct(id, productMapper.toDomain(request));
         return ResponseEntity.ok(productMapper.toDto(updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProductById(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }

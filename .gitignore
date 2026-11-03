@@ -8,3 +8,4 @@ out/
 REVIEW_RULES.md
 @TESTING_RULES.md
 gradle/wrapper/gradle-wrapper.jar
+@DATABASE_RULES.md

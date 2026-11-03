@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,10 +13,10 @@ import org.junit.jupiter.params.provider.EnumSource;
 class OrderTest {
 
     @Test
-    void shouldStartAsNewWithGeneratedIdAndCreationTimeWhenOrderIsCreated() {
+    void shouldStartAsNewWithoutIdAndWithCreationTimeWhenOrderIsCreated() {
         Order order = createTestOrder();
 
-        assertThat(order.getId()).isNotNull();
+        assertThat(order.getId()).isNull();
         assertThat(order.getCreatedAt()).isNotNull();
         assertThat(order.getStatus()).isEqualTo(OrderStatus.NEW);
     }
@@ -29,7 +28,7 @@ class OrderTest {
 
     @Test
     void shouldReturnZeroTotalWhenOrderHasNoItems() {
-        Order order = Order.builder().customerId(UUID.randomUUID()).build();
+        Order order = Order.builder().customerId(100L).build();
 
         assertThat(order.total()).isEqualByComparingTo(BigDecimal.ZERO);
     }
@@ -83,7 +82,7 @@ class OrderTest {
     /** 2 x Star Yarn (5.00) + 1 x Galaxy Milk (3.50) = 13.50. */
     private Order createTestOrder() {
         return Order.builder()
-                .customerId(UUID.randomUUID())
+                .customerId(100L)
                 .items(List.of(
                         createOrderItem("Star Yarn", "5.00", 2),
                         createOrderItem("Galaxy Milk", "3.50", 1)))
@@ -92,7 +91,7 @@ class OrderTest {
 
     private OrderItem createOrderItem(String productName, String unitPrice, int quantity) {
         return OrderItem.builder()
-                .productId(UUID.randomUUID())
+                .productId(1L)
                 .productName(productName)
                 .unitPrice(new BigDecimal(unitPrice))
                 .quantity(quantity)
