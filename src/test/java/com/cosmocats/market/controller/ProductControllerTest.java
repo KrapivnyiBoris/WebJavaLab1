@@ -1,6 +1,7 @@
 package com.cosmocats.market.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -16,10 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
@@ -38,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class ProductControllerTest {
 
     private static final String PRODUCTS_URL = "/api/v1/products";
-    private static final UUID PRODUCT_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final Long PRODUCT_ID = 1L;
 
     @Autowired
     private MockMvc mockMvc;
@@ -66,7 +67,7 @@ class ProductControllerTest {
                         .content(toJson(createValidRequest())))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "http://localhost" + PRODUCTS_URL + "/" + PRODUCT_ID))
-                .andExpect(jsonPath("$.id").value(PRODUCT_ID.toString()))
+                .andExpect(jsonPath("$.id").value(PRODUCT_ID.intValue()))
                 .andExpect(jsonPath("$.name").value("Cosmic Yarn"))
                 .andExpect(jsonPath("$.price").value(9.99))
                 .andExpect(jsonPath("$.category").value("Toys"))
@@ -87,7 +88,7 @@ class ProductControllerTest {
         mockMvc.perform(get(PRODUCTS_URL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].id").value(PRODUCT_ID.toString()))
+                .andExpect(jsonPath("$.content[0].id").value(PRODUCT_ID.intValue()))
                 .andExpect(jsonPath("$.content[0].name").value("Cosmic Yarn"))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(10))
@@ -137,15 +138,15 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenIdIsNotUuid() throws Exception {
-        mockMvc.perform(get(PRODUCTS_URL + "/not-a-uuid"))
+    void shouldReturn400WhenIdIsNotNumber() throws Exception {
+        mockMvc.perform(get(PRODUCTS_URL + "/not-a-number"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.type").exists())
                 .andExpect(jsonPath("$.title").exists())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.detail").value("Failed to convert 'id' with value: 'not-a-uuid'"))
-                .andExpect(jsonPath("$.instance").value(PRODUCTS_URL + "/not-a-uuid"));
+                .andExpect(jsonPath("$.detail").value("Failed to convert 'id' with value: 'not-a-number'"))
+                .andExpect(jsonPath("$.instance").value(PRODUCTS_URL + "/not-a-number"));
 
         verifyNoInteractions(productService);
     }
@@ -177,7 +178,7 @@ class ProductControllerTest {
 
         mockMvc.perform(get(PRODUCTS_URL + "/" + PRODUCT_ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(PRODUCT_ID.toString()))
+                .andExpect(jsonPath("$.id").value(PRODUCT_ID.intValue()))
                 .andExpect(jsonPath("$.name").value("Cosmic Yarn"));
 
         verify(productService, times(1)).getProductById(PRODUCT_ID);
@@ -195,7 +196,7 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(createValidRequest())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(PRODUCT_ID.toString()))
+                .andExpect(jsonPath("$.id").value(PRODUCT_ID.intValue()))
                 .andExpect(jsonPath("$.name").value("Cosmic Yarn"));
 
         verify(productMapper, times(1)).toDomain(any(ProductRequestDto.class));
@@ -258,6 +259,52 @@ class ProductControllerTest {
 
         verify(productService, times(1)).getProductById(PRODUCT_ID);
         verifyNoInteractions(productMapper);
+    }
+
+    // ---- negative scenarios: conflict (409) ------------------------------------------------
+
+    @Test
+    void shouldReturn409WhenProductWithSameNameAlreadyExistsInCategory() throws Exception {
+        Product product = createTestProduct();
+        when(productMapper.toDomain(any(ProductRequestDto.class))).thenReturn(product);
+        when(productService.createProduct(product)).thenThrow(new DataIntegrityViolationException(
+                "could not execute statement",
+                new IllegalStateException(
+                        "duplicate key value violates unique constraint \"uq_products_category_product_name\"")));
+
+        mockMvc.perform(post(PRODUCTS_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(createValidRequest())))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.type").value("https://cosmo-cats.market/errors/conflict"))
+                .andExpect(jsonPath("$.title").value("Conflict"))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.detail").value("Product with the same name already exists in this category."))
+                .andExpect(jsonPath("$.instance").value(PRODUCTS_URL));
+
+        verify(productService, times(1)).createProduct(product);
+        verify(productMapper, never()).toDto(any(Product.class));
+    }
+
+    @Test
+    void shouldReturn409WithGenericDetailWhenOtherIntegrityConstraintIsViolated() throws Exception {
+        Product product = createTestProduct();
+        when(productMapper.toDomain(any(ProductRequestDto.class))).thenReturn(product);
+        when(productService.updateProduct(PRODUCT_ID, product)).thenThrow(new DataIntegrityViolationException(
+                "could not execute statement",
+                new IllegalStateException("violates foreign key constraint \"fk_products_category\"")));
+
+        mockMvc.perform(put(PRODUCTS_URL + "/" + PRODUCT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(createValidRequest())))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://cosmo-cats.market/errors/conflict"))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.detail").value("The request violates a data integrity constraint."))
+                .andExpect(jsonPath("$.instance").value(PRODUCTS_URL + "/" + PRODUCT_ID));
+
+        verify(productService, times(1)).updateProduct(PRODUCT_ID, product);
     }
 
     // ---- test data -------------------------------------------------------------------------

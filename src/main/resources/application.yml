@@ -1,9 +1,20 @@
 spring:
   application:
     name: cosmo-cats
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cosmocats
+    username: postgres
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema is managed by Liquibase, Hibernate only validates it
+    show-sql: false
   web:
     locale: en                # keep validation messages in English regardless of OS locale
     locale-resolver: fixed
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
   mvc:
     problemdetails:
       enabled: false   # RFC 9457 handling is done by GlobalExceptionHandler

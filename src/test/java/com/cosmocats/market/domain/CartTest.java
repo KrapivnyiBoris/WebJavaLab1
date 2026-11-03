@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,15 +11,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class CartTest {
 
-    private static final UUID CUSTOMER_ID = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static final UUID YARN_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID MILK_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private static final Long CUSTOMER_ID = 100L;
+    private static final Long YARN_ID = 1L;
+    private static final Long MILK_ID = 2L;
 
     @Test
-    void shouldGenerateIdAndStartEmptyWhenCartIsCreated() {
+    void shouldStartEmptyWithoutIdWhenCartIsCreated() {
         Cart cart = createEmptyCart();
 
-        assertThat(cart.getId()).isNotNull();
+        assertThat(cart.getId()).isNull();
         assertThat(cart.getCustomerId()).isEqualTo(CUSTOMER_ID);
         assertThat(cart.getItems()).isEmpty();
         assertThat(cart.total()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -125,7 +124,7 @@ class CartTest {
         return cart;
     }
 
-    private Product createProduct(UUID id, String name, String price) {
+    private Product createProduct(Long id, String name, String price) {
         return Product.builder()
                 .id(id)
                 .name(name)

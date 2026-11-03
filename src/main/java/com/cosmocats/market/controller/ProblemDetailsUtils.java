@@ -16,6 +16,7 @@ public class ProblemDetailsUtils {
 
     public static final URI VALIDATION_TYPE = URI.create("https://cosmo-cats.market/errors/validation");
     public static final URI NOT_FOUND_TYPE = URI.create("https://cosmo-cats.market/errors/not-found");
+    public static final URI CONFLICT_TYPE = URI.create("https://cosmo-cats.market/errors/conflict");
     public static final URI INTERNAL_TYPE = URI.create("https://cosmo-cats.market/errors/internal");
 
     private static final String DEFAULT_VALIDATION_DETAIL = "Request validation failed.";
@@ -40,6 +41,10 @@ public class ProblemDetailsUtils {
 
     public ProblemDetail createNotFoundProblemDetail(String detail, String instance) {
         return createProblemDetail(HttpStatus.NOT_FOUND, NOT_FOUND_TYPE, "Resource not found", detail, instance);
+    }
+
+    public ProblemDetail createConflictProblemDetail(String detail, String instance) {
+        return createProblemDetail(HttpStatus.CONFLICT, CONFLICT_TYPE, "Conflict", detail, instance);
     }
 
     public ProblemDetail createInternalServerErrorProblemDetail(String instance) {

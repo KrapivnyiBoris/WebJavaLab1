@@ -1,7 +1,6 @@
 package com.cosmocats.market.domain;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
-    private UUID id;
+    private Long id;
     private String name;
     private String description;
     private BigDecimal price;

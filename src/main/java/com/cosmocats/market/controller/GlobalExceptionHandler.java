@@ -2,7 +2,9 @@ package com.cosmocats.market.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -31,6 +33,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final String PRODUCT_UNIQUE_CONSTRAINT = "uq_products_category_product_name";
+    private static final String PRODUCT_ALREADY_EXISTS_DETAIL =
+            "Product with the same name already exists in this category.";
+    private static final String INTEGRITY_VIOLATION_DETAIL = "The request violates a data integrity constraint.";
 
     // ---- 400: validation errors ------------------------------------------------------------
 
@@ -85,6 +92,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return toResponse(ProblemDetailsUtils.createNotFoundProblemDetail(ex.getMessage(), requestPath(request)));
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(
+            DataIntegrityViolationException ex, WebRequest request) {
+        log.info("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return toResponse(ProblemDetailsUtils.createConflictProblemDetail(conflictDetail(ex), requestPath(request)));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpectedException(Exception ex, WebRequest request) {
         log.error("Unexpected error", ex);
@@ -97,6 +111,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(problemDetail.getStatus())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(problemDetail);
+    }
+
+    private String conflictDetail(DataIntegrityViolationException ex) {
+        return Optional.ofNullable(ex.getMostSpecificCause().getMessage())
+                .filter(message -> message.contains(PRODUCT_UNIQUE_CONSTRAINT))
+                .map(message -> PRODUCT_ALREADY_EXISTS_DETAIL)
+                .orElse(INTEGRITY_VIOLATION_DETAIL);
     }
 
     /** Turns {@code getAllProducts.size} into {@code size}. */

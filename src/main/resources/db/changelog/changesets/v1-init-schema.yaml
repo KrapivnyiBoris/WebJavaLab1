@@ -1,0 +1,170 @@
+databaseChangeLog:
+  # incrementBy = 1 matches allocationSize = 1 of the @SequenceGenerator declarations in the entities
+  - changeSet:
+      id: v1-001-create-sequences
+      author: cosmocats
+      changes:
+        - createSequence:
+            sequenceName: category_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: product_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: order_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: order_item_seq
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: v1-002-create-categories
+      author: cosmocats
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_categories
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: v1-003-create-products
+      author: cosmocats
+      changes:
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_products
+                    nullable: false
+              - column:
+                  name: product_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+              - column:
+                  name: price
+                  type: NUMERIC(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stock_quantity
+                  type: INTEGER
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: v1-004-create-orders
+      author: cosmocats
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_orders
+                    nullable: false
+              - column:
+                  name: order_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: customer_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: NEW
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: v1-005-create-order-items
+      author: cosmocats
+      changes:
+        - createTable:
+            tableName: order_items
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_order_items
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: v1-006-add-foreign-keys
+      author: cosmocats
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_products_category
+            baseTableName: products
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_order_items_order
+            baseTableName: order_items
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_order_items_product
+            baseTableName: order_items
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
